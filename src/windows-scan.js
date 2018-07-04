@@ -44,14 +44,14 @@ function scanWifi(config, callback) {
 function parse(networkTmp) {
     var network = {};
 
-    network.mac = networkTmp[4].match(/.*?:\s(.*)/)[1];
+    network.mac = (networkTmp[4] || '').match(/.*?:\s(.*)/)[1];
     network.bssid = network.mac;
-    network.ssid = networkTmp[0].match(/.*?:\s(.*)/)[1];
-    network.channel = parseInt(networkTmp[7].match(/.*?:\s(.*)/)[1]);
+    network.ssid = (networkTmp[0] || '').match(/.*?:\s(.*)/)[1];
+    network.channel = parseInt(((networkTmp[7] || '')).match(/.*?:\s(.*)/)[1]);
     network.frequency = parseInt(networkUtils.frequencyFromChannel(network.channel));
     network.signal_level = networkUtils.dBFromQuality(networkTmp[5].match(/.*?:\s(.*)/)[1]);
-    network.security = networkTmp[2].match(/.*?:\s(.*)/)[1];
-    network.security_flags = networkTmp[3].match(/.*?:\s(.*)/)[1];
+    network.security = (networkTmp[2] || '').match(/.*?:\s(.*)/)[1];
+    network.security_flags = (networkTmp[3] || '').match(/.*?:\s(.*)/)[1];
     network.mode = 'Unknown';
 
     return network;
