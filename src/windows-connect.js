@@ -20,6 +20,7 @@ function execCommand(cmd) {
 }
 
 function connectToWifi(config, ap, callback) {
+    var apFilePath = process.env.TEMP + "\\" + ap.ssid + ".xml";
     scan(config)()
         .then(function(networks) {
             var selectedAp = networks.find(function(network) {
@@ -30,16 +31,16 @@ function connectToWifi(config, ap, callback) {
                 throw "SSID not found";
             }
 
-            fs.writeFileSync(ap.ssid + ".xml", win32WirelessProfileBuilder(selectedAp, ap.password));
+            fs.writeFileSync(apFilePath, win32WirelessProfileBuilder(selectedAp, ap.password));
         })
         .then(function() {
-            return execCommand("netsh wlan add profile filename=\"" + ap.ssid + ".xml\"")
+            return execCommand("netsh wlan add profile filename=\"" + apFilePath + "\"")
         })
         .then(function() {
             return execCommand("netsh wlan connect ssid=\"" + ap.ssid + "\" name=\"" + ap.ssid + "\"");
         })
         .then(function() {
-            return execCommand("del \".\\" + ap.ssid + ".xml\"");
+            return execCommand("del \"" + apFilePath + "\"");
         })
         .then(function() {
             callback && callback();
