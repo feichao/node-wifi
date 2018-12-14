@@ -20,7 +20,9 @@ function execCommand(cmd) {
 }
 
 function connectToWifi(config, ap, callback) {
-    var apFilePath = process.env.TEMP + "\\" + ap.ssid + ".xml";
+    // 如果是中文, 则是被解码后的 ssid
+    var ssidDecoded = ap.ssidDecoded || ap.ssid;
+    var apFilePath = process.env.TEMP + "\\" + ssidDecoded + ".xml";
     scan(config)()
         .then(function(networks) {
             var selectedAp = networks.find(function(network) {
@@ -31,13 +33,15 @@ function connectToWifi(config, ap, callback) {
                 throw "SSID not found";
             }
 
+            selectedAp.ssid = ssidDecoded;
+
             fs.writeFileSync(apFilePath, win32WirelessProfileBuilder(selectedAp, ap.password));
         })
         .then(function() {
             return execCommand("netsh wlan add profile filename=\"" + apFilePath + "\"")
         })
         .then(function() {
-            return execCommand("netsh wlan connect ssid=\"" + ap.ssid + "\" name=\"" + ap.ssid + "\"");
+            return execCommand("netsh wlan connect name=\"" + ssidDecoded + "\"");
         })
         .then(function() {
             return execCommand("del \"" + apFilePath + "\"");
@@ -55,10 +59,12 @@ function connectToWifi(config, ap, callback) {
 function getHexSsid(plainTextSsid) {
     var i, j, ref, hex;
 
+    plainTextSsid = Buffer.from(plainTextSsid, 'utf8');
+
     hex = "";
 
     for (i = j = 0, ref = plainTextSsid.length - 1; 0 <= ref ? j <= ref : j >= ref; i = 0 <= ref ? ++j : --j) {
-        hex += plainTextSsid.charCodeAt(i).toString(16);
+        hex += plainTextSsid[i].toString(16);
     }
 
     return hex;
