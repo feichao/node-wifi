@@ -41,7 +41,7 @@ function connectToWifi(config, ap, callback) {
             return execCommand("netsh wlan add profile filename=\"" + apFilePath + "\"")
         })
         .then(function() {
-            return execCommand("netsh wlan connect name=\"" + ssidDecoded + "\"");
+            return execCommand("netsh wlan connect name=\"" + (ssidDecoded + '').trim() + "\"");
         })
         .then(function() {
             return execCommand("del \"" + apFilePath + "\"");
